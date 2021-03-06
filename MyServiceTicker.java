@@ -17,12 +17,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MyServiceTicker extends Service {
+    private static final String TAG = "MyServiceTicker";
     private final IBinder binder = new LocalBinder();
     private boolean running = false;
     private NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder notificationBuilder;
     private Notification notification;
-    private static final String TAG = "MyServiceTicker";
     private static final int ONGOING_NOTIFICATION_ID = 111;
     private static final String CHANNEL_ID = "Channel 9";
     private Timer timer;
