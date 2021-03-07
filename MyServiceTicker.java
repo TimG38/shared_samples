@@ -17,15 +17,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MyServiceTicker extends Service {
-    private static final String TAG = "MyServiceTicker";
     private final IBinder binder = new LocalBinder();
-    private boolean running = false;
     private NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder notificationBuilder;
     private Notification notification;
+    private static final String TAG = "MyServiceTicker";
     private static final int ONGOING_NOTIFICATION_ID = 111;
     private static final String CHANNEL_ID = "Channel 9";
-    private Timer timer;
+    private Timer timer = null;
     private int count = 0;
 
     public MyServiceTicker() {
@@ -40,13 +39,12 @@ public class MyServiceTicker extends Service {
 
     public void destroyMe() {
         Log.i(TAG, "destroyMe");
-        running = false;
-        if (timer != null) timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
         stopForeground(true);
-    }
-
-    public boolean isRunning() {
-        return running;
+        stopSelf();
     }
 
     @Override
@@ -58,7 +56,6 @@ public class MyServiceTicker extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
-        running = true;
         startForeground(ONGOING_NOTIFICATION_ID, notification);
         startTimer();
         return START_NOT_STICKY;
@@ -109,18 +106,22 @@ public class MyServiceTicker extends Service {
     }
 
     private void startTimer() {
-        count = 0;
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                count++;
-                notificationBuilder.setContentText(""+count);
-                notificationManager.notify(ONGOING_NOTIFICATION_ID, notificationBuilder.build());
-                Log.i(TAG, ""+count);
-            }
-        };
+        if (timer == null) {
+            Log.i(TAG, "startTimer");
+            count = 0;
 
-        timer = new Timer();
-        timer.scheduleAtFixedRate(timerTask, 0, 1000);
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    count++;
+                    notificationBuilder.setContentText(""+count);
+                    notificationManager.notify(ONGOING_NOTIFICATION_ID, notificationBuilder.build());
+                    Log.i(TAG, ""+count);
+                }
+            };
+
+            timer = new Timer();
+            timer.scheduleAtFixedRate(timerTask, 0, 1000);
+        }
     }
 }
